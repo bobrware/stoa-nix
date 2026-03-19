@@ -1,0 +1,66 @@
+name: Update AppImage Hash
+
+on:
+  repository_dispatch:
+    types: [new-release]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to update (e.g., 0.1.0)'
+        required: false
+        type: string
+
+jobs:
+  update-hash:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get version from workflow dispatch or payload
+        id: version
+        run: |
+          if [ -z "${{ github.event.inputs.version }}" ]; then
+            VERSION="${{ github.event.client_payload.version }}"
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Download AppImage and calculate hash
+        id: hash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          URL="https://stoa.gg/downloads/v${VERSION}/x86_64-linux/stoa.AppImage"
+          
+          echo "Downloading from: $URL"
+          wget -O /tmp/stoa.AppImage "$URL"
+          
+          SHA256=$(sha256sum /tmp/stoa.AppImage | awk '{print $1}')
+          echo "sha256=$SHA256" >> $GITHUB_OUTPUT
+          echo "Downloaded AppImage hash: $SHA256"
+
+      - name: Update flake.nix
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          SHA256="${{ steps.hash.outputs.sha256 }}"
+          
+          sed -i "s/version = \"[^\"]*\";/version = \"${VERSION}\";/" flake.nix
+          sed -i "s/sha256 = \"[^\"]*\";/sha256 = \"${SHA256}\";/" flake.nix
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: "chore: update AppImage hash to ${{ steps.hash.outputs.sha256 }} for version ${{ steps.version.outputs.version }}"
+          title: "chore: update AppImage hash for version ${{ steps.version.outputs.version }}"
+          body: |
+            Automated update of AppImage hash for version ${{ steps.version.outputs.version }}
+            
+            **Hash**: `${{ steps.hash.outputs.sha256 }}`
+            **URL**: https://stoa.gg/downloads/v${{ steps.version.outputs.version }}/x86_64-linux/stoa.AppImage
+          branch: "update-appimage-${{ steps.version.outputs.version }}"
+          delete-branch: true
