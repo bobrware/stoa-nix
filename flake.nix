@@ -25,14 +25,14 @@
             sha256 = "69d30e24b4d2e27934806140b271491f9a8df09eb7ba0a34242f678256ad820e"; # TODO: Set correct hash
           };
 
-          appImageContents = pkgs.appimageTools.extractType2 {inherit (self.packages.${system}.default) src;};
+          appImageContents = pkgs.appimageTools.extractType2 {inherit (self.packages.${system}.default) pname version src;};
 
           nativeBuildInputs = with pkgs; [makeWrapper];
 
           unpackPhase = ''
             cp ${self.packages.${system}.default.src} ./stoa.AppImage
             chmod +x ./stoa.AppImage
-            ${pkgs.appimageTools.extractType2 {inherit (self.packages.${system}.default) src;}}/AppRun --appimage-extract
+            ${pkgs.appimageTools.extractType2 {inherit (self.packages.${system}.default) pname version src;}}/AppRun --appimage-extract
           '';
 
           installPhase = ''
