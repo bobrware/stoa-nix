@@ -35,13 +35,17 @@ jobs:
         id: hash
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          URL="https://stoa.gg/downloads/v${VERSION}/x86_64-linux/stoa.AppImage"
+          SYSTEM_PLATFORM="x86_64-linux"
+          EXTENSION="AppImage"
+          URL="https://s3.stoa.gg/stoa/releases/${VERSION}/${SYSTEM_PLATFORM}/stoa.${EXTENSION}"
           
           echo "Downloading from: $URL"
           wget -O /tmp/stoa.AppImage "$URL"
           
           SHA256=$(sha256sum /tmp/stoa.AppImage | awk '{print $1}')
           echo "sha256=$SHA256" >> $GITHUB_OUTPUT
+          echo "platform=$SYSTEM_PLATFORM" >> $GITHUB_OUTPUT
+          echo "extension=$EXTENSION" >> $GITHUB_OUTPUT
           echo "Downloaded AppImage hash: $SHA256"
 
       - name: Update flake.nix
@@ -61,6 +65,6 @@ jobs:
             Automated update of AppImage hash for version ${{ steps.version.outputs.version }}
             
             **Hash**: `${{ steps.hash.outputs.sha256 }}`
-            **URL**: https://stoa.gg/downloads/v${{ steps.version.outputs.version }}/x86_64-linux/stoa.AppImage
+            **URL**: https://s3.stoa.gg/stoa/releases/${{ steps.version.outputs.version }}/${{ steps.hash.outputs.platform }}/stoa.${{ steps.hash.outputs.extension }}
           branch: "update-appimage-${{ steps.version.outputs.version }}"
           delete-branch: true
