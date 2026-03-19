@@ -14,7 +14,7 @@
     flake-utils.lib.eachSystem ["x86_64-linux"] (
       system: let
         pkgs = nixpkgs.legacyPackages.${system};
-        version = "v0.1.0"; # Set version here or pass as override
+        version = "v0.0.2"; # Set version here or pass as override
       in {
         packages.default = pkgs.stdenv.mkDerivation {
           pname = "stoa";
@@ -22,7 +22,7 @@
 
           src = pkgs.fetchurl {
             url = "https://stoa.gg/downloads/${version}/${system}/stoa.AppImage";
-            sha256 = ""; # TODO: Set correct hash
+            sha256 = "69d30e24b4d2e27934806140b271491f9a8df09eb7ba0a34242f678256ad820e"; # TODO: Set correct hash
           };
 
           appImageContents = pkgs.appimageTools.extractType2 {inherit (self.packages.${system}.default) src;};
