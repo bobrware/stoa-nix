@@ -21,7 +21,7 @@
           inherit version;
 
           src = pkgs.fetchurl {
-            url = "https://stoa.gg/downloads/${version}/${system}/stoa.AppImage";
+            url = "https://s3.stoa.gg/stoa/releases/${version}/${system}/stoa.AppImage";
             sha256 = "69d30e24b4d2e27934806140b271491f9a8df09eb7ba0a34242f678256ad820e"; # TODO: Set correct hash
           };
 
