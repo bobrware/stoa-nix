@@ -6,13 +6,13 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to update (e.g., 0.1.0)'
+        description: "Version to update (e.g., 0.1.0)"
         required: false
         type: string
 
 jobs:
   update-hash:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     permissions:
       contents: write
       pull-requests: write
@@ -38,10 +38,10 @@ jobs:
           SYSTEM_PLATFORM="x86_64-linux"
           EXTENSION="AppImage"
           URL="https://s3.stoa.gg/stoa/releases/${VERSION}/${SYSTEM_PLATFORM}/stoa.${EXTENSION}"
-          
+
           echo "Downloading from: $URL"
           wget -O /tmp/stoa.AppImage "$URL"
-          
+
           SHA256=$(sha256sum /tmp/stoa.AppImage | awk '{print $1}')
           echo "sha256=$SHA256" >> $GITHUB_OUTPUT
           echo "platform=$SYSTEM_PLATFORM" >> $GITHUB_OUTPUT
@@ -52,7 +52,7 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           SHA256="${{ steps.hash.outputs.sha256 }}"
-          
+
           sed -i "s/version = \"[^\"]*\";/version = \"${VERSION}\";/" flake.nix
           sed -i "s/sha256 = \"[^\"]*\";/sha256 = \"${SHA256}\";/" flake.nix
 
@@ -63,7 +63,7 @@ jobs:
           title: "chore: update AppImage hash for version ${{ steps.version.outputs.version }}"
           body: |
             Automated update of AppImage hash for version ${{ steps.version.outputs.version }}
-            
+
             **Hash**: `${{ steps.hash.outputs.sha256 }}`
             **URL**: https://s3.stoa.gg/stoa/releases/${{ steps.version.outputs.version }}/${{ steps.hash.outputs.platform }}/stoa.${{ steps.hash.outputs.extension }}
           branch: "update-appimage-${{ steps.version.outputs.version }}"
