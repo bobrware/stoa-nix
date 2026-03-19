@@ -56,15 +56,10 @@ jobs:
           sed -i "s/version = \"[^\"]*\";/version = \"${VERSION}\";/" flake.nix
           sed -i "s/sha256 = \"[^\"]*\";/sha256 = \"${SHA256}\";/" flake.nix
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
-        with:
-          commit-message: "chore: update AppImage hash to ${{ steps.hash.outputs.sha256 }} for version ${{ steps.version.outputs.version }}"
-          title: "chore: update AppImage hash for version ${{ steps.version.outputs.version }}"
-          body: |
-            Automated update of AppImage hash for version ${{ steps.version.outputs.version }}
-
-            **Hash**: `${{ steps.hash.outputs.sha256 }}`
-            **URL**: https://s3.stoa.gg/stoa/releases/${{ steps.version.outputs.version }}/${{ steps.hash.outputs.platform }}/stoa.${{ steps.hash.outputs.extension }}
-          branch: "update-appimage-${{ steps.version.outputs.version }}"
-          delete-branch: true
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add flake.nix
+          git commit -m "chore: update AppImage hash to ${{ steps.hash.outputs.sha256 }} for version ${{ steps.version.outputs.version }}"
+          git push origin main
