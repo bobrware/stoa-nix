@@ -10,53 +10,42 @@
     self,
     nixpkgs,
     flake-utils,
-  }:
-    flake-utils.lib.eachSystem ["x86_64-linux"] (
-      system: let
-        pkgs = nixpkgs.legacyPackages.${system};
-        version = "v0.0.2"; # Set version here or pass as override
-      in {
-        packages.default = pkgs.stdenv.mkDerivation {
-          pname = "stoa";
-          inherit version;
+  }: let
+    pname = "stoa";
+    version = "v0.0.2";
+    platform = "x86_64-linux";
 
-          src = pkgs.fetchurl {
-            url = "https://s3.stoa.gg/stoa/releases/${version}/${system}/stoa.AppImage";
-            sha256 = "69d30e24b4d2e27934806140b271491f9a8df09eb7ba0a34242f678256ad820e"; # TODO: Set correct hash
-          };
+    sha256 = "69d30e24b4d2e27934806140b271491f9a8df09eb7ba0a34242f678256ad820e";
+  in
+    flake-utils.lib.eachSystem [platform] (system: let
+      pkgs = import nixpkgs {
+        inherit system;
+      };
+      releaseVersion =
+        if pkgs.lib.hasPrefix "v" version
+        then version
+        else "v${version}";
 
-          appImageContents = pkgs.appimageTools.extractType2 {inherit (self.packages.${system}.default) pname version src;};
+      appImage = pkgs.fetchurl {
+        url = "https://s3.stoa.gg/stoa/releases/${releaseVersion}/${platform}/stoa.AppImage";
+        sha256 =
+          if sha256 == ""
+          then pkgs.lib.fakeSha256
+          else sha256;
+      };
 
-          nativeBuildInputs = with pkgs; [makeWrapper];
+      stoa = pkgs.appimageTools.wrapType2 {
+        inherit pname version;
+        src = appImage;
+      };
+    in {
+      packages.stoa = stoa;
+      packages.default = stoa;
 
-          unpackPhase = ''
-            cp ${self.packages.${system}.default.src} ./stoa.AppImage
-            chmod +x ./stoa.AppImage
-            ${pkgs.appimageTools.extractType2 {inherit (self.packages.${system}.default) pname version src;}}/AppRun --appimage-extract
-          '';
-
-          installPhase = ''
-            mkdir -p $out/bin
-            cp squashfs-root/stoa $out/bin/stoa
-            chmod +x $out/bin/stoa
-          '';
-
-          meta = with pkgs.lib; {
-            description = "Stoa desktop application";
-            platforms = ["x86_64-linux"];
-          };
-        };
-
-        apps.default = {
-          type = "app";
-          program = "${self.packages.${system}.default}/bin/stoa";
-        };
-
-        devShells.default = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            self.packages.${system}.default
-          ];
-        };
-      }
-    );
+      apps.stoa = {
+        type = "app";
+        program = "${stoa}/bin/${pname}";
+      };
+      apps.default = self.apps.${system}.stoa;
+    });
 }
