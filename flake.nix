@@ -65,8 +65,8 @@
         extraPkgs = _: tauriLibs;
         profile = pkgs.lib.optionalString enableEglWorkarounds ''
           # Work around WebKitGTK/EGL initialization failures seen in Tauri AppImages.
-          # export WEBKIT_DISABLE_DMABUF_RENDERER="''${WEBKIT_DISABLE_DMABUF_RENDERER:-1}"
-          # export WEBKIT_DISABLE_COMPOSITING_MODE="''${WEBKIT_DISABLE_COMPOSITING_MODE:-1}"
+          export WEBKIT_DISABLE_DMABUF_RENDERER="''${WEBKIT_DISABLE_DMABUF_RENDERER:-1}"
+          export WEBKIT_DISABLE_COMPOSITING_MODE="''${WEBKIT_DISABLE_COMPOSITING_MODE:-1}"
         '';
 
         extraInstallCommands = ''
