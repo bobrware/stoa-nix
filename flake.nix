@@ -50,6 +50,7 @@
         harfbuzz
         expat
         libdrm
+        libva
         libGL
         libglvnd
         wayland
