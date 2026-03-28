@@ -14,7 +14,7 @@
     pname = "stoa";
     version = "v0.2.3";
     platform = "x86_64-linux";
-    enableEglWorkarounds = true;
+    enableEglWorkarounds = false;
     appName = "Stoa";
     startupWMClass = "stoa";
     categories = "Utility;";
