@@ -12,14 +12,14 @@
     flake-utils,
   }: let
     pname = "stoa";
-    version = "v0.2.4";
+    version = "v0.2.5";
     platform = "x86_64-linux";
     enableEglWorkarounds = false;
     appName = "Stoa";
     startupWMClass = "stoa";
     categories = "Utility;";
 
-    sha256 = "12ee7c84bb5581b21429fddb73ea1bf132d17e5895f6d00c38888a9e48e0a036";
+    sha256 = "6f6f4d29a6f75a4ab541d1ddc852a3662d325c30ce2b05a2db0cc660f7fc77c4";
   in
     flake-utils.lib.eachSystem [platform] (system: let
       pkgs = import nixpkgs {
